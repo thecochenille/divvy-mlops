@@ -86,6 +86,15 @@ psql -h CLOUD_SQL_PRIVATE_IP_ADDRESS -U USERNAME DATABASENAME
 
 
 
+Scripts
+
+`download_data.py`: script to download monthly datasets. The user running the script needs to specify the year and month (between April 2020 to today)
+
+=========
+# Credits
+
+- Divvy dataset were download from the Divvy website: https://divvybikes.com/system-data
+=======
 
 ## Evaluation Criteria/Project tracker
 

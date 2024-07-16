@@ -38,7 +38,7 @@ def download_file(year, month):
 
 def main():
     while True:
-        year = input("Please enter the year (YYYY) you want data from:")
+        year = input("Monthly Divvy data is available from April 2020. Please enter the year (YYYY) you want data from:")
         if len(year) != 4 or not year.isdigit():
             print("This is not a valid year, please enter a 4 digit year like 2022")
             continue
@@ -49,8 +49,8 @@ def main():
             continue
 
         result = download_file(year, month)
-        print(result)
-        #print(f'Downloaded file is available at {result["path"]}')
+        
+        print(f'Downloaded file is available at {result["path"]}')
 
         break
 
