@@ -1,4 +1,5 @@
-# MLops-zoomcamp project
+# MLOps Zoomcamp (Data Talks Club) project
+# Predict Divvy bike availability
 # Update Jul 18 2024 Currently working on this repository - NOT IN A WORKING STATE NOW
 
 ![alt text](https://github.com/thecochenille/divvy-mlops/blob/b4f6c242447d59e3711331b514407471744026d0/images/DIVVY_Bikes_16833634748.jpg)
