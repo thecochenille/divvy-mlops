@@ -1,8 +1,22 @@
 # MLops-zoomcamp project
 # Update Jul 18 2024 Currently working on this repository - NOT IN A WORKING STATE NOW
 
-## Problem Statement
+![alt text](http://url/to/img.png)
 
+## Problem Statement
+I am big fan of bike rentals since I first used the Velib in Paris. Now that I live in Chicago, I regularly use Divvy bikes. 
+But sometimes, I can be late because I do not plan that at a given time, there would not be any available bikes. 
+
+Can we predict bike availability at Divvy stations to be prepared?
+
+Divvy has provided monthly records of bike usage since April 2020, so I decided to leverage past usage to predict at a given hour of the day, at a given station, how many bikes will be available. In this case, I use a simple random forest model on an engineered target value, which is the net bike usage per hour per station.
+
+For the scope of the MLOps Zoomcamp certification, I am developing an MLOps pipeline that will allow ingestion of data from the website, data preparation for model training, monitoring, and the model to be deployed in a web app. The app allows a user to enter the name of the station and what time they want to use a Divvy bike, and the ML model will output a prediction of high or low availability.
+
+# Progress so far (July 18)
+
+## ML experiment tracking with MLflow 
+Available at : (http://34.171.118.161:5000)[http://34.171.118.161:5000/]
 
 
 ## Cloud set up
