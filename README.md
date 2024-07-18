@@ -1,4 +1,5 @@
 # MLops-zoomcamp project
+# Update Jul 18 2024 Currently working on this repository - NOT IN A WORKING STATE NOW
 
 ## Problem Statement
 
