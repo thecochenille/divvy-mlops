@@ -6,7 +6,7 @@ Install Docker in GCP VM using this link: https://askubuntu.com/questions/103017
 Permissions to access the Docker daemon on your GCP VM
 First check
 ```
-group
+groups
 ```
 
 If Docker is not in the list, use this command
@@ -15,10 +15,8 @@ sudo usermod -aG docker $USER
 ```
 
 ## Mage docker
-
 ```bash
-    git clone https://github.com/mage-ai/mlops.git
-    cd mlops
+
 ```
 
 
