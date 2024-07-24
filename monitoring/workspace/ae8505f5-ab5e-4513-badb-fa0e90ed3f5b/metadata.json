@@ -1,0 +1,15 @@
+{
+  "id": "ae8505f5-ab5e-4513-badb-fa0e90ed3f5b",
+  "name": "Divvy Data Quality Project",
+  "description": "Divvy Data Quality Dashboard",
+  "dashboard": {
+    "name": "Divvy Data Quality Project",
+    "panels": [],
+    "tabs": [],
+    "tab_id_to_panel_ids": {}
+  },
+  "team_id": null,
+  "date_from": null,
+  "date_to": null,
+  "created_at": "2024-07-24T15:05:25.679428"
+}
