@@ -5,7 +5,7 @@
 ![alt text](https://github.com/thecochenille/divvy-mlops/blob/b4f6c242447d59e3711331b514407471744026d0/images/DIVVY_Bikes_16833634748.jpg)
 
 ## Problem Statement
-I am big fan of bike rentals since I first used the Velib in Paris. Now that I live in Chicago, I regularly use Divvy bikes. 
+I am a big fan of bike rentals since I first used the Velib in Paris. Now that I live in Chicago, I regularly use Divvy bikes. 
 But sometimes, I can be late because I do not plan that at a given time, there would not be any available bikes. 
 
 Can we predict bike availability at Divvy stations to be prepared?
@@ -13,11 +13,6 @@ Can we predict bike availability at Divvy stations to be prepared?
 Divvy has provided monthly records of bike usage since April 2020, so I decided to leverage past usage to predict at a given hour of the day, at a given station, how many bikes will be available. In this case, I use a simple random forest model on an engineered target value, which is the net bike usage per hour per station.
 
 For the scope of the MLOps Zoomcamp certification, I am developing an MLOps pipeline that will allow ingestion of data from the website, data preparation for model training, monitoring, and the model to be deployed in a web app. The app allows a user to enter the name of the station and what time they want to use a Divvy bike, and the ML model will output a prediction of high or low availability.
-
-# Progress so far (July 18)
-
-## ML experiment tracking with MLflow 
-Available at : (http://34.171.118.161:5000)[http://34.171.118.161:5000/]
 
 
 ## Cloud set up
@@ -27,18 +22,18 @@ I following the steps from [kargarisaac.github.io blog post on setting up CGP fo
 Setting up new project on CGP using Terminal
 
 ```
-gcloud config set project projectID
+gcloud config set project <projectID>
 ```
 
 ### Setting up firewall
 
 ```
-gcloud compute firewall-rules create mlflow-divvy-tracking-server \
+gcloud compute firewall-rules create mlflow-divvy-server \
     --network default \
     --priority 1000 \
     --direction ingress \
     --action allow \
-    --target-tags mlflow-divvy-tracking-server \
+    --target-tags mlflow-divvy-server \
     --source-ranges 0.0.0.0/0 \
     --rules tcp:5000 \
     --enable-logging
@@ -63,7 +58,7 @@ source ~/.bashrc
 
 
 ```
-gcloud compute instances create mlflow-divvy-tracking-server \
+gcloud compute instances create mlflow-divvy-server \
     --project=$PROJECT_ID \
     --zone=us-central1-a \
     --machine-type=e2-standard-2 \
@@ -82,7 +77,7 @@ gcloud compute instances create mlflow-divvy-tracking-server \
 
 Create PostgreSQL instance in GCP console
 
-Access the DB from Terminal
+Access the DB from SSH terminal
 ```
 psql -h CLOUD_SQL_PRIVATE_IP_ADDRESS -U USERNAME DATABASENAME
 ```
@@ -102,9 +97,14 @@ psql -h CLOUD_SQL_PRIVATE_IP_ADDRESS -U USERNAME DATABASENAME
 
 
 
-Scripts
+## Scripts
+Running scripts independently.
+The scripts were prepared to be ran in this order
 
-`download_data.py`: script to download monthly datasets. The user running the script needs to specify the year and month (between April 2020 to today)
+
+`download_data.py`: script to download monthly datasets. The user running the script needs to specify the year and month (between April 2020 to today). The downloaded data is unzipped and saved into a raw data folder. 
+
+`data_preparation.py`: script loads data from the raw data folder which is cleaned and prepared for ML training or prediction. The user needs to specify year and month as in `download_data.py` and the new dataset generated from this script is daved in processed data folder.
 
 =========
 # Credits
