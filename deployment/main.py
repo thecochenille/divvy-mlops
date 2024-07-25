@@ -26,15 +26,15 @@ logged_model = "models:/randomforest-scaled/Production"
 #load data
 @st.cache_data
 def read_data(): #loading test data to show metric
-    with open('../data/test_data/202304-usage-experiment2.pkl', 'rb') as f:
-        X_train, y_train, X_test, y_test = pickle.load(f)
-    return X_train, y_train, X_test, y_test
+    with open('../data/test_data/202304-usage-testdata.pkl', 'rb') as f:
+        X_test, y_test = pickle.load(f)
+    return X_test, y_test
 
 data_processed = pd.read_parquet("../data/processed/202304-usage.parquet")
 
 
 #functions
-@st.cache_data
+@st.cache_resource
 def load_model():
     loaded_model = mlflow.pyfunc.load_model(logged_model)
     return loaded_model
