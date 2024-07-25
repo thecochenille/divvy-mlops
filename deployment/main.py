@@ -26,11 +26,9 @@ logged_model = "models:/randomforest-scaled/Production"
 #load data
 @st.cache_data
 def read_data(): #loading test data to show metric
-    with open('../data/test_data/202304-usage-test.pkl', 'rb') as f:
-        X_test, y_test = pickle.load(f)
-    return X_test, y_test
-
-data_processed = pd.read_parquet("../data/processed/202304-usage.parquet")
+    test_data_df = pd.read_parquet('data/202304-test-transformed.parquet')
+    data_processed = pd.read_parquet("../data/processed/202304-usage.parquet")
+    return test_data_df, data_processed
 
 
 #functions
@@ -77,14 +75,11 @@ def user_predict(model, scaler, encoder, station_name, hour, day_week): ## still
     return user_prediction 
 
 
-def prediction_score(model,X_test, y_test):  #this is to generate the model score from test set
-    num_features = ['hour']
-    cat_features = ['station_name', 'day_of_week']
-    scaled_test = pd.DataFrame(scaler.transform(X_test[num_features]), columns=['hour_scaled'])
-    encoded_test = pd.DataFrame(encoder.transform(X_test[cat_features]).toarray(), columns = encoder.get_feature_names_out(cat_features))
-    transformed_X_test = pd.concat([scaled_test,encoded_test], axis=1)
+def prediction_score(model, test_data):  #this is to generate the model score from test set
+    X_test = test_data.drop('net_usage', axis=1)
+    y_test = test_data['net_usage']
 
-    predictions = model.predict(transformed_X_test)
+    predictions = model.predict(X_test)
     mse = mean_squared_error(y_test.values, predictions)
     return predictions, mse
 
@@ -95,18 +90,15 @@ st.write("Hello, world! Here, you can predict for Divvy availability. Select the
          not too many or not at all")
 
 
-#get dataset with divvy stations from predictions
-X_test, y_test = read_data()
-
-st.write(X_test)
-
+#get datasets with divvy stations from predictions
+test_data_df, data_processed = read_data() #this dataset was encoded but not scaled
 loaded_model = load_model()
 encoder, scaler = load_encoder_scaler()
 
 # from test predictions
 # calculate mse for display
 
-test_predictions, test_mse = prediction_score(loaded_model, X_test, y_test)
+test_predictions, test_mse = prediction_score(loaded_model, test_data_df)
 
 # calculate bins
 bins = calculate_bins(test_predictions)
@@ -116,7 +108,7 @@ with col1:
     st.header("Model Performance")
     st.write("Mean Squared Error on our test set:", test_mse)
 
-    df = pd.DataFrame({'y_test': y_test, 'y_pred': test_predictions})
+    df = pd.DataFrame({'y_test': test_data_df['net_usage'], 'y_pred': test_predictions})
 
     fig = px.histogram(df, barmode='overlay', histnorm='probability density')
     st.plotly_chart(fig)
@@ -138,25 +130,34 @@ with col2:
 
     day_week = st.selectbox(
     "Which day of the week do you want to ride?",
-    (data_processed['day_of_week'].unique().tolist()),
+    (data_processed['day_of_week'].unique().tolist()),   
     index=None,
     placeholder="Select day",
     )
 
     st.write("You selected:", day_week)
 
-    hour = st.selectbox(
-    "What time will you ride?",
-    (data_processed['hour'].unique().tolist()),
-    index=None,
-    placeholder="Select hour of the day",
-    )
+    #hour = st.selectbox(
+    #"What time will you ride?",
+    #(data_processed['hour'].unique().tolist()),
+    #index=None,
+    #placeholder="Select hour of the day",
+    #)
+    #st.write("You selected:", hour)"
 
-    st.write("You selected:", hour)
+
+    selected_time = st.time_input("What time will you ride?")
+    hour = selected_time.hour
+    st.write('You selected:', selected_time)
+
 
 
     if st.button("Predict availability"):
         user_prediction = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
-        st.success(f"Predicted Bike Availability: {user_prediction}")
+        if user_prediction < 0: #since usage is rentals-returns , more returns means net_usage < 0 and therefore bikes available
+           result = "There should be bikes available"
+        else:
+           result = "There should NOT be any available bike"
+        st.success(f"Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.")
   
 
