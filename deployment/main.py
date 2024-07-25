@@ -6,6 +6,8 @@ import pandas as pd
 import numpy as np
 import pickle
 
+import plotly.express as px
+
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 
@@ -46,16 +48,18 @@ def load_encoder_scaler():
     
     return encoder, scaler
 
-def bin_predictions(predictions):  ### still working on this
-
+def calculate_bins(predictions):
   q1 = np.quantile(predictions, 0.25)
   q3 = np.quantile(predictions, 0.75)
+  return [q1, q3]
 
-  bins = np.digitize(predictions, [q1, q3])
-  bins[bins == 2] = 1  
-  bins[bins == 3] = 2
-
-  return bins
+def assign_to_bin(prediction, bins):
+  if prediction <= bins[0]:
+    return 0  # Many bikes available
+  elif prediction <= bins[1]:
+    return 1  # Some bikes available
+  else:
+    return 2  # High usage
 
 
 def user_predict(model, scaler, encoder, station_name, hour, day_week): ## still working on this function
@@ -65,33 +69,24 @@ def user_predict(model, scaler, encoder, station_name, hour, day_week): ## still
     num_features = ['hour']
     cat_features = ['station_name', 'day_of_week']
 
-    #scale num
     scaled_input = pd.DataFrame(scaler.transform(user_input[num_features]), columns=['hour_scaled'])
-
-    #encode cat
     encoded_input = pd.DataFrame(encoder.transform(user_input[cat_features]).toarray(), columns = encoder.get_feature_names_out(cat_features))
-    
     user_input = pd.concat([scaled_input,encoded_input], axis=1)
-    
+
     user_prediction = model.predict(user_input)
-    binned_prediction = bin_predictions(user_prediction) ## still working on this
-
-    bin_labels = {0: "High Usage", 1: "Some Bikes Available", 2: "Many Bikes Available"}
-
-    return bin_labels[binned_prediction]  ## this is not working
-
+    return user_prediction 
 
 
 def prediction_score(model,X_test, y_test):  #this is to generate the model score from test set
     predictions = model.predict(X_test)
     mse = mean_squared_error(y_test.values, predictions)
-    return mse
+    return predictions, mse
 
-   
+st.title("Chicago Divvy Bike Availability Prediction App")
 
-st.title("Divvy Availability prediction App")
-
-st.write("Hello, world!")
+st.write("Hello, world! Here, you can predict for Divvy availability. Select the station, day of the week \
+         and time you want to ride and this model will predict if there will be bikes available, \
+         not too many or not at all")
 
 
 #get dataset with divvy stations from predictions
@@ -99,41 +94,59 @@ X_train, y_train, X_test, y_test = read_data()
 loaded_model = load_model()
 encoder, scaler = load_encoder_scaler()
 
+# from test predictions
+# calculate mse for display
+test_predictions, test_mse = prediction_score(loaded_model, X_test, y_test)
 
+# calculate bins
+bins = calculate_bins(test_predictions)
+
+col1, col2 = st.columns(2)
+with col1:
+    st.header("Model Performance")
+    st.write("Mean Squared Error on our test set:", test_mse)
+
+    df = pd.DataFrame({'y_test': y_test, 'y_pred': test_predictions})
+
+    fig = px.histogram(df, barmode='overlay', histnorm='probability density')
+    st.plotly_chart(fig)
+
+
+with col2: 
+    st.header("Predict Divvy Availability")
+    
 # select station
-station_name = st.selectbox(
-   "Which Divvy Station are you looking for?",
-   (data_processed['station_name'].unique().tolist()),
-   index=None,
-   placeholder="Select Divvy station",
-)
+    station_name = st.selectbox(
+    "Which Divvy Station are you looking for?",
+    (data_processed['station_name'].unique().tolist()),
+    index=None,
+    placeholder="Select Divvy station",
+    )
 
-st.write("You selected:", station_name)
-
-
-day_week = st.selectbox(
-   "Which day of the week do you want to ride?",
-   (data_processed['day_of_week'].unique().tolist()),
-   index=None,
-   placeholder="Select day",
-)
-
-st.write("You selected:", day_week)
-
-hour = st.selectbox(
-   "What time will you ride?",
-   (data_processed['hour'].unique().tolist()),
-   index=None,
-   placeholder="Select hour of the day",
-)
-
-st.write("You selected:", hour)
+    st.write("You selected:", station_name)
 
 
-if st.button("Predict availability"):
-  binned_result = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
-  st.success(f"Predicted Bike Availability: {binned_result}")
+    day_week = st.selectbox(
+    "Which day of the week do you want to ride?",
+    (data_processed['day_of_week'].unique().tolist()),
+    index=None,
+    placeholder="Select day",
+    )
+
+    st.write("You selected:", day_week)
+
+    hour = st.selectbox(
+    "What time will you ride?",
+    (data_processed['hour'].unique().tolist()),
+    index=None,
+    placeholder="Select hour of the day",
+    )
+
+    st.write("You selected:", hour)
+
+
+    if st.button("Predict availability"):
+        user_prediction = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
+        st.success(f"Predicted Bike Availability: {user_prediction}")
   
-
-
 
