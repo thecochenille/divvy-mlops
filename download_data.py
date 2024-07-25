@@ -36,6 +36,11 @@ def download_file(year, month):
     }
 
 
+#def upload_google_storage(data):
+#working on adding def to upload data to google storage
+
+
+
 def main():
     while True:
         year = input("Monthly Divvy data is available from April 2020. Please enter the year (YYYY) you want data from:")
