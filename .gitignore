@@ -1,2 +1,4 @@
 #datasets
-data/
+data/raw/
+data/processed/
+data/test_data/*-experiment*.pkl
