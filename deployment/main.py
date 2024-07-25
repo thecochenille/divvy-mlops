@@ -26,7 +26,7 @@ logged_model = "models:/randomforest-scaled/Production"
 #load data
 @st.cache_data
 def read_data(): #loading test data to show metric
-    test_data_df = pd.read_parquet('data/202304-test-transformed.parquet')
+    test_data_df = pd.read_parquet('/data/202304-test-transformed.parquet')
     data_processed = pd.read_parquet("../data/processed/202304-usage.parquet")
     return test_data_df, data_processed
 
