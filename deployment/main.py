@@ -26,7 +26,7 @@ logged_model = "models:/randomforest-scaled/Production"
 #load data
 @st.cache_data
 def read_data(): #loading test data to show metric
-    with open('../data/test_data/202304-usage-testdata.pkl', 'rb') as f:
+    with open('../data/test_data/202304-usage-test.pkl', 'rb') as f:
         X_test, y_test = pickle.load(f)
     return X_test, y_test
 
@@ -78,7 +78,13 @@ def user_predict(model, scaler, encoder, station_name, hour, day_week): ## still
 
 
 def prediction_score(model,X_test, y_test):  #this is to generate the model score from test set
-    predictions = model.predict(X_test)
+    num_features = ['hour']
+    cat_features = ['station_name', 'day_of_week']
+    scaled_test = pd.DataFrame(scaler.transform(X_test[num_features]), columns=['hour_scaled'])
+    encoded_test = pd.DataFrame(encoder.transform(X_test[cat_features]).toarray(), columns = encoder.get_feature_names_out(cat_features))
+    transformed_X_test = pd.concat([scaled_test,encoded_test], axis=1)
+
+    predictions = model.predict(transformed_X_test)
     mse = mean_squared_error(y_test.values, predictions)
     return predictions, mse
 
@@ -90,12 +96,16 @@ st.write("Hello, world! Here, you can predict for Divvy availability. Select the
 
 
 #get dataset with divvy stations from predictions
-X_train, y_train, X_test, y_test = read_data()
+X_test, y_test = read_data()
+
+st.write(X_test)
+
 loaded_model = load_model()
 encoder, scaler = load_encoder_scaler()
 
 # from test predictions
 # calculate mse for display
+
 test_predictions, test_mse = prediction_score(loaded_model, X_test, y_test)
 
 # calculate bins
