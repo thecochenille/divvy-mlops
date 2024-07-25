@@ -14,6 +14,20 @@ Divvy has provided monthly records of bike usage since April 2020, so I decided 
 
 For the scope of the MLOps Zoomcamp certification, I am developing an MLOps pipeline that will allow ingestion of data from the website, data preparation for model training, monitoring, and the model to be deployed in a web app. The app allows a user to enter the name of the station and what time they want to use a Divvy bike, and the ML model will output a prediction of high or low availability.
 
+## Starting Model
+
+To implement the MLOps system, I built a basic model where I first engineered bike net usage by station by hour of each weekday as follows:
+
+```count(rentals) - count(returns)```
+
+
+NB: This value is really simplified and does not account for initial bike numbers in time. It could be improved by accounting for number of bikes per station, but I will focus on the MLOps side for now
+
+Features: hour, day of the week, station
+
+Metric: MSE
+
+
 
 ## Cloud set up
 I following the steps from [kargarisaac.github.io blog post on setting up CGP for the mlops course](https://kargarisaac.github.io/blog/mlops/data%20engineering/2022/06/15/MLFlow-on-GCP.html#Virtual-Machine-as-The-Tracking-Server)
@@ -86,6 +100,10 @@ psql -h CLOUD_SQL_PRIVATE_IP_ADDRESS -U USERNAME DATABASENAME
 ## Workflow orchestration
 
 ## Model deployment
+
+Model was deployed on Streamlit
+
+
 
 
 ## Model monitoring
