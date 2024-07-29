@@ -8,7 +8,7 @@
 I am a big fan of bike rentals since I first used the Velib in Paris. Now that I live in Chicago, I regularly use Divvy bikes. 
 But sometimes, I can be late because I do not plan that at a given time, there would not be any available bikes. 
 
-Can we predict bike availability at Divvy stations to be prepared?
+Can we predict bike availability at Divvy stations on a particular day and hour of the week?
 
 Divvy has provided monthly records of bike usage since April 2020, so I decided to leverage past usage to predict at a given hour of the day, at a given station, how many bikes will be available. In this case, I use a simple random forest model on an engineered target value, which is the net bike usage per hour per station.
 
