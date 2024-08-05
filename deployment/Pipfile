@@ -8,6 +8,10 @@ streamlit = "*"
 typing-extensions = "*"
 plotly = "*"
 mlflow = "*"
+google-cloud = "*"
+google-cloud-storage = "*"
+gcsfs = "*"
+st-files-connection = "*"
 
 [dev-packages]
 

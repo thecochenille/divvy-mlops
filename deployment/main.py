@@ -14,7 +14,7 @@ from sklearn.metrics import mean_squared_error
 
 
 #parameters for model loading from mflow
-TRACKING_URL = "http://34.68.82.207:5000"
+TRACKING_URL = "http://34.171.118.161:5000"
 mlflow.set_tracking_uri(TRACKING_URL)
 logged_model = "models:/randomforest-scaled/Production"
 
@@ -26,8 +26,8 @@ logged_model = "models:/randomforest-scaled/Production"
 #load data
 @st.cache_data
 def read_data(): #loading test data to show metric
-    test_data_df = pd.read_parquet('/data/202304-test-transformed.parquet')
-    data_processed = pd.read_parquet("../data/processed/202304-usage.parquet")
+    test_data_df = pd.read_parquet('./data/202304-test-transformed.parquet')
+    data_processed = pd.read_parquet("./data/202304-usage.parquet")
     return test_data_df, data_processed
 
 
@@ -38,10 +38,10 @@ def load_model():
     return loaded_model
 
 def load_encoder_scaler():
-    with open('../experiment_tracking/models/encoder-experiment4.pkl', 'rb') as f: 
+    with open('./models/encoder-experiment5.pkl', 'rb') as f: 
         encoder = pickle.load(f)
 
-    with open('../experiment_tracking/models/scaler-experiment4.pkl', 'rb') as f: 
+    with open('./models/scaler-experiment5.pkl', 'rb') as f: 
         scaler = pickle.load(f)
     
     return encoder, scaler
