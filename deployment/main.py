@@ -158,8 +158,11 @@ with col2:
         user_prediction = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
         if user_prediction < 0: #since usage is rentals-returns , more returns means net_usage < 0 and therefore bikes available
            result = "There should be bikes available"
+           color = "green"
         else:
            result = "There should NOT be any available bike"
-        st.success(f"Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.")
+           color = "red"
+        st.markdown(f'<div style="padding:10px; background-color:{color};">Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.</div>', unsafe_allow_html=True)
+        #st.success(f"Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.")
   
 
