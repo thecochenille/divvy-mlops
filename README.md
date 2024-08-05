@@ -2,6 +2,9 @@
 # Predict Divvy bike availability
 # Update Jul 18 2024 Currently working on this repository - NOT IN A WORKING STATE NOW
 
+
+### ADD TABLE OF CONTENT
+
 ![alt text](https://github.com/thecochenille/divvy-mlops/blob/b4f6c242447d59e3711331b514407471744026d0/images/DIVVY_Bikes_16833634748.jpg)
 
 ## Problem Statement
@@ -97,11 +100,39 @@ psql -h CLOUD_SQL_PRIVATE_IP_ADDRESS -U USERNAME DATABASENAME
 ```
 
 
+
+### Link to Experiment Tracking
+[http://34.171.118.161:5000](http://34.171.118.161:5000)
+
 ## Workflow orchestration
+### Mage
+
+
+
 
 ## Model deployment
 
-Model was deployed on Streamlit
+To deploy the model, I created a Streamlit app that was Dockerized for deployment on Google Cloud Run.
+
+The app can be accessed from the internet at this link:
+[https://divvy-app-xg4necj6gq-uc.a.run.app/](https://divvy-app-xg4necj6gq-uc.a.run.app/)
+
+### Use Docker to run the app
+You can also build the Docker on your computer and run the app locally. To do so,
+in deployment/, to build the docker container locally, run the following lines in your Terminal:
+
+```
+docker build -t divvy-app .
+```
+
+to run the app on Docker locally
+
+```
+docker run -p 8080:8080 divvy-app
+```
+
+Once the app is on, you can take a look at: http://localhost:8080/
+
 
 
 
@@ -124,11 +155,30 @@ The scripts were prepared to be ran in this order
 
 `data_preparation.py`: script loads data from the raw data folder which is cleaned and prepared for ML training or prediction. The user needs to specify year and month as in `download_data.py` and the new dataset generated from this script is daved in processed data folder.
 
+
+
+
+
+=========
+Repository Files
+
+
+
+
+
+
+
+
+
 =========
 # Credits
 
 - Divvy dataset were download from the Divvy website: https://divvybikes.com/system-data
 =======
+
+
+
+
 
 ## Evaluation Criteria/Project tracker
 
