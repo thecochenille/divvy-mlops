@@ -26,24 +26,24 @@ from sklearn.metrics import mean_squared_error
 #load data
 @st.cache_data
 def read_data(): #loading test data to show metric
-    test_data_df = pd.read_parquet('./data/202304-test-transformed.parquet')
-    data_processed = pd.read_parquet("./data/202304-usage.parquet")
+    test_data_df = pd.read_parquet('data/202304-test-transformed.parquet')
+    data_processed = pd.read_parquet("data/202304-usage.parquet")
     return test_data_df, data_processed
 
 
 #functions
 @st.cache_resource
 def load_model():
-    with open('./models/model.pkl', 'rb') as f: 
+    with open('models/model.pkl', 'rb') as f: 
         loaded_model = pickle.load(f)
     #loaded_model = mlflow.pyfunc.load_model(logged_model)
     return loaded_model
 
 def load_encoder_scaler():
-    with open('./models/encoder-experiment4.pkl', 'rb') as f: 
+    with open('models/encoder-experiment4.pkl', 'rb') as f: 
         encoder = pickle.load(f)
 
-    with open('./models/scaler-experiment4.pkl', 'rb') as f: 
+    with open('models/scaler-experiment4.pkl', 'rb') as f: 
         scaler = pickle.load(f)
     
     return encoder, scaler
