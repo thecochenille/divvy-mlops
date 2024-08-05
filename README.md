@@ -134,7 +134,8 @@ docker run -p 8080:8080 divvy-app
 Once the app is on, you can take a look at: http://localhost:8080/
 
 
-
+### To improve
+I want to set uo Google Storage access when running the app to retrieve the data and model artifacts that are in production from MLFlow.
 
 
 ## Model monitoring
