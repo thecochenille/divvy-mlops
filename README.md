@@ -11,6 +11,8 @@
 * [Problem Statement](#problem-statementt)
 * [Base Model](#base-model)
 * [Implementation Summary](#implementation-summary)
+    + [Tools](#Experiment-tracker-setup)
+    + [Schematic](#Setting-up-firewall)
 * [Google Cloud Platform set up](#google-cloud-platform-set-up)
     + [Experiment tracker setup](#Experiment-tracker-setup)
     + [Setting up firewall](#Setting-up-firewall)
@@ -55,11 +57,15 @@ Metric: MSE
 
 ## Implementation Summary
 
+### Tools 
 
+### Schematic
 
 ## Google Cloud Platform set up
 
-I following the steps from [kargarisaac.github.io blog post on setting up CGP for the mlops course](https://kargarisaac.github.io/blog/mlops/data%20engineering/2022/06/15/MLFlow-on-GCP.html#Virtual-Machine-as-The-Tracking-Server)
+To work on Google Cloud Platform, I used the following resources:
+- [Setting up the virtual machine for Experiment Tracking](https://kargarisaac.github.io/blog/mlops/data%20engineering/2022/06/15/MLFlow-on-GCP.html#Virtual-Machine-as-The-Tracking-Server)
+- [Deploy the Streamlit app using Docker in Cloud Run](https://medium.com/@faizififita1/how-to-deploy-your-streamlit-web-app-to-google-cloud-run-ba776487c5fe)
 
 ### Experiment tracker setup
 Setting up new project on CGP using Terminal
@@ -134,6 +140,7 @@ Link to README.md in Experiment Tracking
 [http://34.171.118.161:5000](http://34.171.118.161:5000)
 
 ## Workflow orchestration
+
 ### Mage
 
 
