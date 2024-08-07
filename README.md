@@ -3,7 +3,29 @@
 # Update Jul 18 2024 Currently working on this repository - NOT IN A WORKING STATE NOW
 
 
-### ADD TABLE OF CONTENT
+## Table of Contents
+* [Problem Statement](#problem-statementt)
+* [Base Model](#base-model)
+* [Implementation Summary](#implementation-summary)
+* [Google Cloud Platform set up](#google-cloud-platform-set-up)
+    + [Experiment tracker setup](#Experiment-tracker-setup)
+    + [Setting up firewall](#Setting-up-firewall)
+    + [Launching Compute Instance](#Launching-Compute-Instance)
+* [Experiment Tracking](#Experiment-Tracking)
+    + [Summary](#Summary)
+    + [Link to Experiment Tracking](#Link-to-Experiment-Tracking)
+* [Workflow orchestration](#Workflow-orchestration)
+    + [Mage](#mage)
+* [Model deployment](#Model-deployment)
+    + [Summary](#summary)
+    + [Run the Streamlit App locally with Docker](#Run-the-Streamlit-App-locally-with-Docker)
+    + [Improvements to make](#Improvements-to-make)
+* [Model monitoring](#Model-monitoring)
+
+* [Repository files](#repository-files)
+* [Credits](#Credits)
+
+
 
 ![alt text](https://github.com/thecochenille/divvy-mlops/blob/b4f6c242447d59e3711331b514407471744026d0/images/DIVVY_Bikes_16833634748.jpg)
 
@@ -17,7 +39,7 @@ Divvy has provided monthly records of bike usage since April 2020, so I decided 
 
 For the scope of the MLOps Zoomcamp certification, I am developing an MLOps pipeline that will allow ingestion of data from the website, data preparation for model training, monitoring, and the model to be deployed in a web app. The app allows a user to enter the name of the station and what time they want to use a Divvy bike, and the ML model will output a prediction of high or low availability.
 
-## Starting Model
+## Base Model
 
 To implement the MLOps system, I built a basic model where I first engineered bike net usage by station by hour of each weekday as follows:
 
@@ -30,9 +52,12 @@ Features: hour, day of the week, station
 
 Metric: MSE
 
+## Implementation Summary
 
 
-## Cloud set up
+
+## Google Cloud Platform set up
+
 I following the steps from [kargarisaac.github.io blog post on setting up CGP for the mlops course](https://kargarisaac.github.io/blog/mlops/data%20engineering/2022/06/15/MLFlow-on-GCP.html#Virtual-Machine-as-The-Tracking-Server)
 
 ### Experiment tracker setup
@@ -56,8 +81,7 @@ gcloud compute firewall-rules create mlflow-divvy-server \
     --enable-logging
 ```
 
-## Experiment Tracking
-### GCP settup
+### Launching Compute Instance
 ```
 export PROJECT_ID=project-id
 export PROJECT_NUMBER=number-id
@@ -72,7 +96,6 @@ export PROJECT_NUMBER=368983834138
 ```
 source ~/.bashrc
 ```
-
 
 ```
 gcloud compute instances create mlflow-divvy-server \
@@ -92,6 +115,7 @@ gcloud compute instances create mlflow-divvy-server \
     --reservation-affinity=any
 ```
 
+
 Create PostgreSQL instance in GCP console
 
 Access the DB from SSH terminal
@@ -100,6 +124,10 @@ psql -h CLOUD_SQL_PRIVATE_IP_ADDRESS -U USERNAME DATABASENAME
 ```
 
 
+## Experiment Tracking
+### Summary
+
+Link to README.md in Experiment Tracking
 
 ### Link to Experiment Tracking
 [http://34.171.118.161:5000](http://34.171.118.161:5000)
@@ -117,7 +145,7 @@ To deploy the model, I created a Streamlit app that was Dockerized for deploymen
 The app can be accessed from the internet at this link:
 [https://divvy-app-xg4necj6gq-uc.a.run.app/](https://divvy-app-xg4necj6gq-uc.a.run.app/)
 
-### Use Docker to run the app
+### Run the Streamlit App locally with Docker
 You can also build the Docker on your computer and run the app locally. To do so,
 in deployment/, to build the docker container locally, run the following lines in your Terminal:
 
@@ -134,7 +162,7 @@ docker run -p 8080:8080 divvy-app
 Once the app is on, you can take a look at: http://localhost:8080/
 
 
-### To improve
+### Improvements to make
 I want to set uo Google Storage access when running the app to retrieve the data and model artifacts that are in production from MLFlow.
 
 
@@ -147,7 +175,14 @@ I want to set uo Google Storage access when running the app to retrieve the data
 
 
 
-## Scripts
+
+
+
+
+
+=========
+## Repository Files
+
 Running scripts independently.
 The scripts were prepared to be ran in this order
 
@@ -160,19 +195,10 @@ The scripts were prepared to be ran in this order
 
 
 
-=========
-Repository Files
-
-
-
-
-
-
-
 
 
 =========
-# Credits
+## Credits
 
 - Divvy dataset were download from the Divvy website: https://divvybikes.com/system-data
 =======
