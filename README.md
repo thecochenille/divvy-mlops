@@ -3,6 +3,10 @@
 # Update Jul 18 2024 Currently working on this repository - NOT IN A WORKING STATE NOW
 
 
+![alt text](https://github.com/thecochenille/divvy-mlops/blob/b4f6c242447d59e3711331b514407471744026d0/images/DIVVY_Bikes_16833634748.jpg)
+
+
+
 ## Table of Contents
 * [Problem Statement](#problem-statementt)
 * [Base Model](#base-model)
@@ -25,9 +29,6 @@
 * [Repository files](#repository-files)
 * [Credits](#Credits)
 
-
-
-![alt text](https://github.com/thecochenille/divvy-mlops/blob/b4f6c242447d59e3711331b514407471744026d0/images/DIVVY_Bikes_16833634748.jpg)
 
 ## Problem Statement
 I am a big fan of bike rentals since I first used the Velib in Paris. Now that I live in Chicago, I regularly use Divvy bikes. 
