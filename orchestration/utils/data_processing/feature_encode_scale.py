@@ -2,6 +2,10 @@ import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 
+from google.cloud import storage
+import io
+import pickle
+
 
 def encode_categorical(df):
     cat_features = ['station_name', 'day_of_week']
@@ -31,3 +35,13 @@ def scale_numerical(X_train, X_test, y_train, y_test):
     scaled_X_test = scaled_X_test.drop(num_features, axis=1)
 
     return Standard_Scaler, scaled_X_train, scaled_X_test, y_train, y_test
+
+def save_multiple_pkl_to_gcs(encoder_scaler, bucket_name, folder_path, file_name):
+    with io.BytesIO() as buffer:
+        pickle.dump(encoder_scaler, buffer)
+        buffer.seek(0)
+
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(f"{folder_path}/{file_name}.pkl")
+        blob.upload_from_file(buffer)

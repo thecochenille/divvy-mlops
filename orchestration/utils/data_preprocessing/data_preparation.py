@@ -1,13 +1,4 @@
-import os
-import requests
-import zipfile
-from tqdm import tqdm
-
 import pandas as pd
-
-import datetime
-
-
 
 def load_dataframe(filename):
     df= pd.read_csv(filename) 
@@ -60,35 +51,35 @@ def extract_station_info(df):
   return df[['net_usage', 'station_name', 'hour', 'day_of_week']] #this is the final dataset I need
 
 
-def main():
-    while True:
-        year = input("Please enter the year (YYYY) you want for data preparation:")
-        if len(year) != 4 or not year.isdigit():
-            print("This is not a valid year, please enter a 4 digit year like 2022")
-            continue
+# def main():
+#     while True:
+#         year = input("Please enter the year (YYYY) you want for data preparation:")
+#         if len(year) != 4 or not year.isdigit():
+#             print("This is not a valid year, please enter a 4 digit year like 2022")
+#             continue
 
-        month = input("Please enter a month (MM) you want data from:")
-        if len(month) != 2 or not month.isdigit():
-            print("This is not a valid month, please enter a 2 digit year like 01 for January")
-            continue
+#         month = input("Please enter a month (MM) you want data from:")
+#         if len(month) != 2 or not month.isdigit():
+#             print("This is not a valid month, please enter a 2 digit year like 01 for January")
+#             continue
 
-        path_input ='data/raw'   
-        path_output ='data/processed'
-        filename_input = f'{path_input}/{year}{month}-divvy-tripdata.csv'
-        filename_output = f'{path_output}/{year}{month}-usage.parquet'
+#         path_input ='data/raw'   
+#         path_output ='data/processed'
+#         filename_input = f'{path_input}/{year}{month}-divvy-tripdata.csv'
+#         filename_output = f'{path_output}/{year}{month}-usage.parquet'
 
 
-        df = load_dataframe(filename_input) 
-        df = remove_missing_data(df)
-        df = create_hour_weekday(df)
+#         df = load_dataframe(filename_input) 
+#         df = remove_missing_data(df)
+#         df = create_hour_weekday(df)
 
-        usage_df = transform_df_target(df)
+#         usage_df = transform_df_target(df)
 
-        usage_df_final = extract_station_info(usage_df.copy())
+#         usage_df_final = extract_station_info(usage_df.copy())
 
-        usage_df_final.to_parquet(filename_output)  
+#         usage_df_final.to_parquet(filename_output)  
 
-        break
+#         break
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

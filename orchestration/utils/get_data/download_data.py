@@ -6,8 +6,8 @@ from tqdm import tqdm
 import pandas as pd
 
 
-
 def download_file(year, month):
+    month = str(month).zfill(2)
     file= f'{year}{month}' #change to env variables year and month and path
     path= './data/raw'
     url=f'https://divvy-tripdata.s3.amazonaws.com/{file}-divvy-tripdata.zip'
@@ -34,7 +34,6 @@ def download_file(year, month):
       "year": year,
       "month": month
     }
-
 
 #def upload_google_storage(data):
 #working on adding def to upload data to google storage
