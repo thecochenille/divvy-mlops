@@ -11,32 +11,40 @@ import plotly.express as px
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 
+import schedule
+import time
+
+from utils.model_checker import check_for_model_changes
+from utils.model_checker import get_production_models
 
 
-#ONHOLD USING DOWNLOADED MODEL FIRST - parameters for model loading from mflow / on hold
-#TRACKING_URL = "http://34.171.118.161:5000"
-#mlflow.set_tracking_uri(TRACKING_URL)
-#logged_model = "models:/randomforest-scaled/Production"
+def check_model():
+    tracking_uri = "http://34.171.118.161:5000/"
+    model_name = get_production_models(tracking_uri)
+    models_dir ='models'
+    version = check_for_model_changes(model_name, tracking_uri, models_dir)
+    print(f'this is the model name in production: {model_name}-{version}')
+
+    print('Model Check completed!')
+    return model_name, version
+
+
 
 # getting models dependencies (optional)
 #mlflow.pyfunc.get_model_dependencies(logged_model)
 #%pip install -r /var/folders/dd/nb8m5vwd1sz3_s49jh1plcfr0000gn/T/tmpkv8uin21/requirements.txt
 
 
-#load data
 @st.cache_data
 def read_data(): #loading test data to show metric
-    test_data_df = pd.read_parquet('data/202304-test-transformed.parquet')
-    data_processed = pd.read_parquet("data/202304-usage.parquet")
+    test_data_df = pd.read_parquet('data/202304-test-transformed.parquet') # this set is to make the predictions and create scores
+    data_processed = pd.read_parquet("data/202304-usage.parquet") #this set is to extract features values for user to select
     return test_data_df, data_processed
 
-
-#functions
 @st.cache_resource
-def load_model():
-    with open('models/model.pkl', 'rb') as f: 
+def load_model(model_name, version):
+    with open(f'models/{model_name}/model-{version}.pkl', 'rb') as f: 
         loaded_model = pickle.load(f)
-    #loaded_model = mlflow.pyfunc.load_model(logged_model)
     return loaded_model
 
 def load_encoder_scaler():
@@ -85,84 +93,90 @@ def prediction_score(model, test_data):  #this is to generate the model score fr
     mse = mean_squared_error(y_test.values, predictions)
     return predictions, mse
 
-st.title("Chicago Divvy Bike Availability Prediction App")
+def main():
+    schedule.every(10).minutes.do(check_model)
+    model_name, version = check_model()
 
-st.write("Hello, world! Here, you can predict for Divvy availability. Select the station, day of the week \
-         and time you want to ride and this model will predict if there will be bikes available, \
-         not too many or not at all")
+    st.title("Chicago Divvy Bike Availability Prediction App")
 
-
-#get datasets with divvy stations from predictions
-test_data_df, data_processed = read_data() #this dataset was encoded but not scaled
-loaded_model = load_model()
-encoder, scaler = load_encoder_scaler()
-
-# from test predictions
-# calculate mse for display
-
-test_predictions, test_mse = prediction_score(loaded_model, test_data_df)
-
-# calculate bins
-bins = calculate_bins(test_predictions)
-
-col1, col2 = st.columns(2)
-with col1:
-    st.header("Model Performance")
-    st.write("Mean Squared Error on our test set:", test_mse)
-
-    df = pd.DataFrame({'y_test': test_data_df['net_usage'], 'y_pred': test_predictions})
-
-    fig = px.histogram(df, barmode='overlay', histnorm='probability density')
-    st.plotly_chart(fig)
+    st.write("Hello, world! Here, you can predict for Divvy availability. Select the station, day of the week \
+            and time you want to ride and this model will predict if there will be bikes available, \
+            not too many or not at all")
 
 
-with col2: 
-    st.header("Predict Divvy Availability")
+    #get datasets with divvy stations from predictions
+    test_data_df, data_processed = read_data() #this dataset was encoded but not scaled
+    loaded_model = load_model(model_name, version)
+    encoder, scaler = load_encoder_scaler()
+
+    # from test predictions
+    # calculate mse for display
+
+    test_predictions, test_mse = prediction_score(loaded_model, test_data_df)
+
+    # calculate bins
+    bins = calculate_bins(test_predictions)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.header("Model Performance")
+        st.write("Mean Squared Error on our test set:", test_mse)
+
+        df = pd.DataFrame({'y_test': test_data_df['net_usage'], 'y_pred': test_predictions})
+
+        fig = px.histogram(df, barmode='overlay', histnorm='probability density')
+        st.plotly_chart(fig)
+
+
+    with col2: 
+        st.header("Predict Divvy Availability")
+        
+    # select station
+        station_name = st.selectbox(
+        "Which Divvy Station are you looking for?",
+        (data_processed['station_name'].unique().tolist()),
+        index=None,
+        placeholder="Select Divvy station",
+        )
+
+        st.write("You selected:", station_name)
+
+        day_week = st.selectbox(
+        "Which day of the week do you want to ride?",
+        (data_processed['day_of_week'].unique().tolist()),   
+        index=None,
+        placeholder="Select day",
+        )
+
+        st.write("You selected:", day_week)
+
+        #hour = st.selectbox(
+        #"What time will you ride?",
+        #(data_processed['hour'].unique().tolist()),
+        #index=None,
+        #placeholder="Select hour of the day",
+        #)
+        #st.write("You selected:", hour)"
+
+
+        selected_time = st.time_input("What time will you ride?")
+        hour = selected_time.hour
+        st.write('You selected:', selected_time)
+
+        if st.button("Predict availability"):
+            user_prediction = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
+            if user_prediction < 0: #since usage is rentals-returns , more returns means net_usage < 0 and therefore bikes available
+                result = "There should be bikes available"
+                color = "green"
+            else:
+                result = "There should NOT be any available bike"
+                color = "red"
+            st.markdown(f'<div style="padding:10px; background-color:{color};">Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.</div>', unsafe_allow_html=True)
+            #st.success(f"Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.")
     
-# select station
-    station_name = st.selectbox(
-    "Which Divvy Station are you looking for?",
-    (data_processed['station_name'].unique().tolist()),
-    index=None,
-    placeholder="Select Divvy station",
-    )
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
-    st.write("You selected:", station_name)
-
-
-    day_week = st.selectbox(
-    "Which day of the week do you want to ride?",
-    (data_processed['day_of_week'].unique().tolist()),   
-    index=None,
-    placeholder="Select day",
-    )
-
-    st.write("You selected:", day_week)
-
-    #hour = st.selectbox(
-    #"What time will you ride?",
-    #(data_processed['hour'].unique().tolist()),
-    #index=None,
-    #placeholder="Select hour of the day",
-    #)
-    #st.write("You selected:", hour)"
-
-
-    selected_time = st.time_input("What time will you ride?")
-    hour = selected_time.hour
-    st.write('You selected:', selected_time)
-
-
-
-    if st.button("Predict availability"):
-        user_prediction = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
-        if user_prediction < 0: #since usage is rentals-returns , more returns means net_usage < 0 and therefore bikes available
-           result = "There should be bikes available"
-           color = "green"
-        else:
-           result = "There should NOT be any available bike"
-           color = "red"
-        st.markdown(f'<div style="padding:10px; background-color:{color};">Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.</div>', unsafe_allow_html=True)
-        #st.success(f"Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.")
-  
-
+if __name__ == "__main__":
+    main()

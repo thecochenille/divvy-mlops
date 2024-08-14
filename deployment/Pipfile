@@ -12,6 +12,7 @@ google-cloud = "*"
 google-cloud-storage = "*"
 gcsfs = "*"
 st-files-connection = "*"
+schedule = "*"
 
 [dev-packages]
 
