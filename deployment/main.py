@@ -5,6 +5,7 @@ import mlflow.pyfunc
 import pandas as pd
 import numpy as np
 import pickle
+import pyarrow as pa
 
 import plotly.express as px
 
@@ -16,29 +17,44 @@ import time
 
 from utils.model_checker import check_for_model_changes
 from utils.model_checker import get_production_models
+from utils.download_from_gcs import download_parquet_df_from_gcs, download_pickle_from_gcs, retrieve_encoder_scale_from_pkl
+
 
 
 def check_model():
     tracking_uri = "http://34.171.118.161:5000/"
-    model_name = get_production_models(tracking_uri)
+    model_info = get_production_models(tracking_uri)
+
+    model_name = model_info[0]['model_name']
+    experiment_name=model_info[0]['experiment_name']
+    experiment_id=model_info[0]['experiment_id']
+
     models_dir ='models'
     version = check_for_model_changes(model_name, tracking_uri, models_dir)
+    
     print(f'this is the model name in production: {model_name}-{version}')
 
     print('Model Check completed!')
-    return model_name, version
-
+    return model_name, version, experiment_name, experiment_id
 
 
 # getting models dependencies (optional)
 #mlflow.pyfunc.get_model_dependencies(logged_model)
 #%pip install -r /var/folders/dd/nb8m5vwd1sz3_s49jh1plcfr0000gn/T/tmpkv8uin21/requirements.txt
 
+data_folder_path = 'data/deployment'
+models_folder_path = 'models/deployment'
+bucket_name = 'mlops-divvy-experiment-tracking'
+
 
 @st.cache_data
-def read_data(): #loading test data to show metric
-    test_data_df = pd.read_parquet('data/202304-test-transformed.parquet') # this set is to make the predictions and create scores
-    data_processed = pd.read_parquet("data/202304-usage.parquet") #this set is to extract features values for user to select
+def read_data(experiment_name, experiment_id): #loading test data to show metric
+    test_filename = f'202304-transformed_X_test-{experiment_name}-{experiment_id}.parquet.parquet'
+    usage_filename = f'20234-usage.parquet.parquet'
+
+    test_data_df = download_parquet_df_from_gcs(bucket_name, data_folder_path, test_filename)
+    data_processed = download_parquet_df_from_gcs(bucket_name, data_folder_path, usage_filename) #this set is to extract features values for user to select
+    
     return test_data_df, data_processed
 
 @st.cache_resource
@@ -47,13 +63,16 @@ def load_model(model_name, version):
         loaded_model = pickle.load(f)
     return loaded_model
 
-def load_encoder_scaler():
-    with open('models/encoder-experiment4.pkl', 'rb') as f: 
-        encoder = pickle.load(f)
-
-    with open('models/scaler-experiment4.pkl', 'rb') as f: 
-        scaler = pickle.load(f)
+def load_encoder_scaler(experiment_name, experiment_id):
+    encoder_scale_filename = f'encoder_scaler-{experiment_name}-{experiment_id}.pkl'
+    loaded_object = download_pickle_from_gcs(bucket_name, models_folder_path, encoder_scale_filename)
+    encoder, scaler = retrieve_encoder_scale_from_pkl(loaded_object)
     
+    # with open('models/encoder-experiment4.pkl', 'rb') as f: 
+    #     encoder = pickle.load(f)
+
+    # with open('models/scaler-experiment4.pkl', 'rb') as f: 
+    #     scaler = pickle.load(f)
     return encoder, scaler
 
 def calculate_bins(predictions):
@@ -95,7 +114,7 @@ def prediction_score(model, test_data):  #this is to generate the model score fr
 
 def main():
     schedule.every(10).minutes.do(check_model)
-    model_name, version = check_model()
+    model_name, version, experiment_name, experiment_id = check_model()
 
     st.title("Chicago Divvy Bike Availability Prediction App")
 
@@ -105,9 +124,9 @@ def main():
 
 
     #get datasets with divvy stations from predictions
-    test_data_df, data_processed = read_data() #this dataset was encoded but not scaled
+    test_data_df, data_processed = read_data(experiment_name, experiment_id) #this dataset was encoded but not scaled
     loaded_model = load_model(model_name, version)
-    encoder, scaler = load_encoder_scaler()
+    encoder, scaler = load_encoder_scaler(experiment_name, experiment_id)
 
     # from test predictions
     # calculate mse for display

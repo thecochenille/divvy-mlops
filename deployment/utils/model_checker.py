@@ -105,9 +105,21 @@ def get_production_models(tracking_uri):
     client = MlflowClient(tracking_uri=tracking_uri)
     registered_models = client.search_registered_models()
     production_models = []
+
     for model in registered_models:
         latest_versions = client.get_latest_versions(model.name)
         for version in latest_versions:
             if "Production" in version.current_stage:
-                production_models.append(model.name)
-    return production_models[0]
+                run_id = version.run_id
+                run = client.get_run(run_id)
+                experiment_id = run.info.experiment_id
+                experiment = client.get_experiment(experiment_id)
+                experiment_name = experiment.name
+                model_info = {
+                  "model_name": model.name,
+                  "version": version.version,
+                  "experiment_name": experiment_name,
+                  "experiment_id": experiment_id
+                }
+                production_models.append(model_info)
+    return production_models
