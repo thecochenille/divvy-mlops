@@ -14,7 +14,7 @@ def extract_version_from_path(file_path):
 
 def check_for_model_changes(model_name, tracking_uri, models_dir):
   client = MlflowClient(tracking_uri=tracking_uri)
-  
+  mlflow.set_tracking_uri(tracking_uri)
   try:
     latest_production_version = client.get_latest_versions(model_name, stages=["Production"])[0]
     current_version = latest_production_version.version
@@ -35,14 +35,15 @@ def check_for_model_changes(model_name, tracking_uri, models_dir):
         if not latest_model_file or version > latest_model_version:
           latest_model_file = file
           latest_model_version = version
-
-
+    
     if latest_model_version != current_version:
         mlflow.set_tracking_uri(tracking_uri)
         #output_path = f'models/model_{current_version}.pkl' #sets the output path as the model version in production
         model_path = os.path.join(models_dir, latest_model_file)
         fetch_model(tracking_uri, model_name, current_version, model_dir)
         os.remove(f'{model_dir}/model-{version}.pkl')
+
+         
     else:
        print(f'There is no new version of {model_name} in Production. The current version is: {latest_model_version}')
     

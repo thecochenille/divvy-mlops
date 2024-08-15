@@ -9,7 +9,7 @@ import pyarrow as pa
 
 import plotly.express as px
 
-from sklearn.ensemble import RandomForestRegressor
+import xgboost
 from sklearn.metrics import mean_squared_error
 
 import schedule
@@ -49,8 +49,8 @@ bucket_name = 'mlops-divvy-experiment-tracking'
 
 @st.cache_data
 def read_data(experiment_name, experiment_id): #loading test data to show metric
-    test_filename = f'202304-transformed_X_test-{experiment_name}-{experiment_id}.parquet.parquet'
-    usage_filename = f'20234-usage.parquet.parquet'
+    test_filename = f'202304-transformed_X_test-{experiment_name}-{experiment_id}.parquet'
+    usage_filename = f'202304-usage-{experiment_name}-{experiment_id}.parquet'
 
     test_data_df = download_parquet_df_from_gcs(bucket_name, data_folder_path, test_filename)
     data_processed = download_parquet_df_from_gcs(bucket_name, data_folder_path, usage_filename) #this set is to extract features values for user to select
@@ -64,15 +64,15 @@ def load_model(model_name, version):
     return loaded_model
 
 def load_encoder_scaler(experiment_name, experiment_id):
-    encoder_scale_filename = f'encoder_scaler-{experiment_name}-{experiment_id}.pkl'
-    loaded_object = download_pickle_from_gcs(bucket_name, models_folder_path, encoder_scale_filename)
-    encoder, scaler = retrieve_encoder_scale_from_pkl(loaded_object)
+    # encoder_scale_filename = f'encoder_scaler-{experiment_name}-{experiment_id}.pkl'
+    # loaded_object = download_pickle_from_gcs(bucket_name, models_folder_path, encoder_scale_filename)
+    # encoder, scaler = retrieve_encoder_scale_from_pkl(loaded_object)
     
-    # with open('models/encoder-experiment4.pkl', 'rb') as f: 
-    #     encoder = pickle.load(f)
+    with open('models/encoder-experiment4.pkl', 'rb') as f: 
+        encoder = pickle.load(f)
 
-    # with open('models/scaler-experiment4.pkl', 'rb') as f: 
-    #     scaler = pickle.load(f)
+    with open('models/scaler-experiment4.pkl', 'rb') as f: 
+        scaler = pickle.load(f)
     return encoder, scaler
 
 def calculate_bins(predictions):
@@ -89,7 +89,7 @@ def assign_to_bin(prediction, bins):
     return 2  # High usage
 
 
-def user_predict(model, scaler, encoder, station_name, hour, day_week): ## still working on this function
+def user_predict(model, scaler, encoder, station_name, hour, day_week): 
     ### notes for next time: https://stackoverflow.com/questions/62240050/how-to-run-model-on-new-data-that-requires-pd-get-dummies
     
     user_input= pd.DataFrame({'station_name': [station_name],'day_of_week':[day_week],'hour':[hour]})
@@ -113,14 +113,14 @@ def prediction_score(model, test_data):  #this is to generate the model score fr
     return predictions, mse
 
 def main():
-    schedule.every(10).minutes.do(check_model)
+    schedule.every(30).minutes.do(check_model)
     model_name, version, experiment_name, experiment_id = check_model()
 
-    st.title("Chicago Divvy Bike Availability Prediction App")
+    st.title("Chicago Divvy Bike Availability Model Performance")
 
-    st.write("Hello, world! Here, you can predict for Divvy availability. Select the station, day of the week \
-            and time you want to ride and this model will predict if there will be bikes available, \
-            not too many or not at all")
+    # st.write("Hello, world! Here, you can predict for Divvy availability. Select the station, day of the week \
+    #         and time you want to ride and this model will predict if there will be bikes available, \
+    #         not too many or not at all")
 
 
     #get datasets with divvy stations from predictions
@@ -136,62 +136,62 @@ def main():
     # calculate bins
     bins = calculate_bins(test_predictions)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.header("Model Performance")
-        st.write("Mean Squared Error on our test set:", test_mse)
+    # col1, col2 = st.columns(2)
+    # with col1:
+    st.header("Model Performance")
+    st.write(f"Mean Squared Error of {model_name} on our test set:", test_mse)
 
-        df = pd.DataFrame({'y_test': test_data_df['net_usage'], 'y_pred': test_predictions})
+    df = pd.DataFrame({'y_test': test_data_df['net_usage'], 'y_pred': test_predictions})
 
-        fig = px.histogram(df, barmode='overlay', histnorm='probability density')
-        st.plotly_chart(fig)
+    fig = px.histogram(df, barmode='overlay', histnorm='probability density')
+    st.plotly_chart(fig)
 
 
-    with col2: 
-        st.header("Predict Divvy Availability")
+    # with col2: 
+    #     st.header("Predict Divvy Availability")
         
-    # select station
-        station_name = st.selectbox(
-        "Which Divvy Station are you looking for?",
-        (data_processed['station_name'].unique().tolist()),
-        index=None,
-        placeholder="Select Divvy station",
-        )
+    # # select station
+    #     station_name = st.selectbox(
+    #     "Which Divvy Station are you looking for?",
+    #     (data_processed['station_name'].unique().tolist()),
+    #     index=None,
+    #     placeholder="Select Divvy station",
+    #     )
 
-        st.write("You selected:", station_name)
+    #     st.write("You selected:", station_name)
 
-        day_week = st.selectbox(
-        "Which day of the week do you want to ride?",
-        (data_processed['day_of_week'].unique().tolist()),   
-        index=None,
-        placeholder="Select day",
-        )
+    #     day_week = st.selectbox(
+    #     "Which day of the week do you want to ride?",
+    #     (data_processed['day_of_week'].unique().tolist()),   
+    #     index=None,
+    #     placeholder="Select day",
+    #     )
 
-        st.write("You selected:", day_week)
+    #     st.write("You selected:", day_week)
 
-        #hour = st.selectbox(
-        #"What time will you ride?",
-        #(data_processed['hour'].unique().tolist()),
-        #index=None,
-        #placeholder="Select hour of the day",
-        #)
-        #st.write("You selected:", hour)"
+    #     #hour = st.selectbox(
+    #     #"What time will you ride?",
+    #     #(data_processed['hour'].unique().tolist()),
+    #     #index=None,
+    #     #placeholder="Select hour of the day",
+    #     #)
+    #     #st.write("You selected:", hour)"
 
 
-        selected_time = st.time_input("What time will you ride?")
-        hour = selected_time.hour
-        st.write('You selected:', selected_time)
+    #     selected_time = st.time_input("What time will you ride?")
+    #     hour = selected_time.hour
+    #     st.write('You selected:', selected_time)
 
-        if st.button("Predict availability"):
-            user_prediction = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
-            if user_prediction < 0: #since usage is rentals-returns , more returns means net_usage < 0 and therefore bikes available
-                result = "There should be bikes available"
-                color = "green"
-            else:
-                result = "There should NOT be any available bike"
-                color = "red"
-            st.markdown(f'<div style="padding:10px; background-color:{color};">Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.</div>', unsafe_allow_html=True)
-            #st.success(f"Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.")
+    #     if st.button("Predict availability"):
+    #         user_prediction = user_predict(loaded_model, scaler, encoder, station_name, hour, day_week)
+    #         if user_prediction < 0: #since usage is rentals-returns , more returns means net_usage < 0 and therefore bikes available
+    #             result = "There should be bikes available"
+    #             color = "green"
+    #         else:
+    #             result = "There should NOT be any available bike"
+    #             color = "red"
+    #         st.markdown(f'<div style="padding:10px; background-color:{color};">Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.</div>', unsafe_allow_html=True)
+    #         #st.success(f"Predicted Bike Availability: {result} at {station_name} on {day_week} around {hour}:00.")
     
     while True:
         schedule.run_pending()
